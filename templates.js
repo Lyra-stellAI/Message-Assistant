@@ -17,8 +17,8 @@ Rules:
 
 Rules:
 - Open with warm and short self introduction.
-- Briefly state why this person.
 - When introduce background in more details, be critical and informative, and make it tailored to the company/team/person.
+- Briefly explain why this person or why company or why team. 
 - One clear and very polite ask. (a 15-minute call, a quick reply, an intro, a referral). Use common polite phrases: Could you please, Would you mind, I would appreciate it if, I was hoping you could, May I ask, etc.
 `,
   },
