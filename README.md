@@ -38,15 +38,110 @@ Click the extension icon → a side panel opens that stays visible across tabs. 
 
 ## Installation
 
-1. Clone the repo:
-   ```sh
-   git clone https://github.com/lyra-stellai/web-assistant.git
-   cd web-assistant
-   ```
-2. In Chrome, open `chrome://extensions`
-3. Toggle **Developer mode** (top-right)
-4. Click **Load unpacked** and pick the project folder
-5. The Settings page opens automatically on first install — paste an API key for at least one provider
+The extension isn't on the Chrome Web Store — you install it manually as an **unpacked extension**. Takes about two minutes. Detailed walkthrough below.
+
+### Step 1 — Get the code onto your computer
+
+Pick whichever you prefer:
+
+**Option A — Git (recommended if you'll pull updates later):**
+```sh
+git clone https://github.com/Lyra-stellAI/Message-Assistant.git
+cd Message-Assistant
+```
+
+**Option B — ZIP download (no git needed):**
+1. Open https://github.com/Lyra-stellAI/Message-Assistant in your browser
+2. Click the green **Code** button (top-right of the file list)
+3. Click **Download ZIP**
+4. Unzip it somewhere stable on your computer — e.g. `~/Documents/Message-Assistant/` on macOS/Linux, or `C:\Users\<you>\Documents\Message-Assistant\` on Windows
+5. **Don't put it in Downloads** — Chrome will keep using whatever path you pick, so use a folder you won't move or delete
+
+### Step 2 — Open the Chrome Extensions page
+
+- Open Chrome
+- In the address bar, type `chrome://extensions` and press Enter
+- (Alternative: click the three-dot menu top-right → **Extensions** → **Manage Extensions**)
+
+### Step 3 — Enable Developer mode
+
+- Look for the **Developer mode** toggle in the **top-right** of the extensions page
+- Switch it **on**
+- A new row of buttons appears at the top: **Load unpacked**, **Pack extension**, **Update**
+
+### Step 4 — Load the unpacked extension
+
+- Click **Load unpacked**
+- A folder picker opens. Navigate to the project folder you cloned or unzipped
+- **Important:** select the folder that contains `manifest.json` directly (not a parent folder, not a subfolder). The selected folder should show `manifest.json`, `sidepanel.html`, `options.html`, `templates.js`, etc. when you peek inside.
+- Click **Select Folder** / **Open**
+
+You should now see a **Message Assistant** card on the extensions page. The Settings page opens automatically on first install.
+
+### Step 5 — Pin the extension to your toolbar (so you can find it)
+
+By default Chrome hides newly-installed extensions in a puzzle-piece menu.
+
+- Click the **puzzle-piece icon** in the Chrome toolbar (right of the address bar)
+- Find **Message Assistant** in the list
+- Click the **pin icon** next to it
+- The extension's icon now lives in your toolbar permanently
+
+### Step 6 — Add your API keys
+
+If the Settings page didn't open automatically, right-click the extension's toolbar icon → **Options** (or click **Details** on the extensions page → **Extension options**).
+
+- Paste an API key for **at least one** provider — Anthropic, OpenAI, DeepSeek, or Qwen (see the "Where to get API keys" table below)
+- Click **Save settings**
+
+You only need keys for the providers you'll use. Keys are stored locally in `chrome.storage.sync` and sent only to that provider's API.
+
+### Step 7 — Start drafting
+
+- Click the **Message Assistant** icon in your toolbar
+- The side panel opens on the right
+- Pick a message type, paste recipient info and your goal, hit **Generate**
+
+That's it.
+
+---
+
+### Updating the extension
+
+When you pull new code or someone pushes a change:
+
+```sh
+cd Message-Assistant
+git pull
+```
+
+Then in Chrome:
+1. Go to `chrome://extensions`
+2. Find the **Message Assistant** card
+3. Click the **circular refresh icon** in the bottom-right corner of the card
+4. Reopen the side panel (the old one may still show the previous version until refreshed)
+
+For some changes — particularly manifest changes — a full Chrome restart picks them up reliably. For most code changes, the refresh icon is enough.
+
+### Uninstalling
+
+- `chrome://extensions` → find Message Assistant → click **Remove** → confirm
+- Stored data (API keys, profile, customizations) is wiped along with the extension. Back up first if you want to keep your profile / overrides.
+
+### Troubleshooting
+
+| Symptom | Likely cause + fix |
+|---|---|
+| "Manifest file is missing or unreadable" on Load unpacked | You selected a folder that doesn't contain `manifest.json`. Re-pick the folder one level deeper (the one that actually contains the JS/HTML files). |
+| Extension card shows red **Errors** button | Click it to see the stack trace. Often a missing referenced file (e.g. icon paths in `manifest.json` that don't resolve). |
+| Side panel doesn't open when I click the icon | Make sure you're on Chrome **114 or newer** (`chrome://settings/help` to check). Side panels need 114+. |
+| Side panel opens blank or stuck on a spinner | Open DevTools on the side panel: right-click inside the panel → **Inspect**. Check the **Console** tab for errors. |
+| "No API key configured" warning | You haven't added an API key for the provider whose model is selected. Either pick a model from a provider you do have a key for, or add the key in Settings. |
+| HTTP 401 / 403 from a provider | Wrong or expired API key. Generate a new one and update Settings. |
+| HTTP 429 | Rate-limited. Wait, or switch to a different provider/model. |
+| "No visible output" with a reasoning model | The model burned the entire token budget on internal reasoning. Switch to a non-reasoning model (gpt-4o, deepseek-chat, qwen-plus) — they're faster and cheaper for short messages anyway. |
+| Toolbar shows a generic puzzle piece, not a custom icon | The icon files aren't set up. See **Setting up the toolbar icon** below — optional, the extension still works. |
+| Settings button missing in side panel header | Side panel is too narrow and the button is being clipped. Drag the left edge of the panel to widen it. |
 
 ### Where to get API keys
 
