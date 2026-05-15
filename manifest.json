@@ -6,7 +6,10 @@
   "permissions": ["sidePanel", "storage", "activeTab", "scripting"],
   "host_permissions": [
     "https://api.anthropic.com/*",
-    "https://api.openai.com/*"
+    "https://api.openai.com/*",
+    "https://api.deepseek.com/*",
+    "https://dashscope-intl.aliyuncs.com/*",
+    "https://dashscope.aliyuncs.com/*"
   ],
   "background": {
     "service_worker": "background.js"

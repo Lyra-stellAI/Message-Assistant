@@ -121,10 +121,91 @@ const PRESET_MODELS = new Set(
     .filter((v) => v && v !== '__custom__'),
 );
 
+function extractAnthropicDelta(data) {
+  if (data.type === 'content_block_delta' && data.delta?.type === 'text_delta') {
+    return data.delta.text;
+  }
+  return '';
+}
+
+function extractOpenAIDelta(data) {
+  return data.choices?.[0]?.delta?.content || '';
+}
+
+function buildAnthropicRequest({ model, apiKey, system, user }) {
+  return {
+    url: 'https://api.anthropic.com/v1/messages',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 1024,
+      stream: true,
+      system,
+      messages: [{ role: 'user', content: user }],
+    }),
+  };
+}
+
+function openAICompatibleBuilder(url, maxTokensKey) {
+  return ({ model, apiKey, system, user }) => ({
+    url,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      stream: true,
+      [maxTokensKey]: 1024,
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: user },
+      ],
+    }),
+  });
+}
+
+const PROVIDERS = {
+  anthropic: {
+    name: 'Anthropic',
+    keyField: 'anthropicApiKey',
+    inferPatterns: [/^claude-/i],
+    buildRequest: buildAnthropicRequest,
+    extractDelta: extractAnthropicDelta,
+  },
+  openai: {
+    name: 'OpenAI',
+    keyField: 'openaiApiKey',
+    inferPatterns: [/^gpt-/i, /^o\d/i, /^chatgpt-/i],
+    buildRequest: openAICompatibleBuilder('https://api.openai.com/v1/chat/completions', 'max_completion_tokens'),
+    extractDelta: extractOpenAIDelta,
+  },
+  deepseek: {
+    name: 'DeepSeek',
+    keyField: 'deepseekApiKey',
+    inferPatterns: [/^deepseek-/i],
+    buildRequest: openAICompatibleBuilder('https://api.deepseek.com/chat/completions', 'max_tokens'),
+    extractDelta: extractOpenAIDelta,
+  },
+  qwen: {
+    name: 'Qwen',
+    keyField: 'qwenApiKey',
+    inferPatterns: [/^qwen/i, /^qwq/i],
+    buildRequest: openAICompatibleBuilder('https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions', 'max_tokens'),
+    extractDelta: extractOpenAIDelta,
+  },
+};
+
 function inferProvider(model) {
   if (!model) return null;
-  if (model.startsWith('claude-')) return 'anthropic';
-  if (model.startsWith('gpt-') || model.startsWith('chatgpt-') || /^o\d/.test(model)) return 'openai';
+  for (const [key, config] of Object.entries(PROVIDERS)) {
+    if (config.inferPatterns.some((p) => p.test(model))) return key;
+  }
   return null;
 }
 
@@ -138,11 +219,9 @@ async function migrateLegacyKey() {
 
 async function checkApiKey() {
   await migrateLegacyKey();
-  const { anthropicApiKey, openaiApiKey } = await chrome.storage.sync.get([
-    'anthropicApiKey',
-    'openaiApiKey',
-  ]);
-  const hasAnyKey = !!(anthropicApiKey || openaiApiKey);
+  const keyFields = Object.values(PROVIDERS).map((p) => p.keyField);
+  const stored = await chrome.storage.sync.get(keyFields);
+  const hasAnyKey = keyFields.some((f) => !!stored[f]);
   els.noKeyWarning.classList.toggle('hidden', hasAnyKey);
   return hasAnyKey;
 }
@@ -234,59 +313,6 @@ function updateCharCount() {
   els.charCount.classList.toggle('hidden', !text);
 }
 
-function buildRequest({ provider, model, apiKey, system, user }) {
-  if (provider === 'anthropic') {
-    return {
-      url: 'https://api.anthropic.com/v1/messages',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model,
-        max_tokens: 1024,
-        stream: true,
-        system,
-        messages: [{ role: 'user', content: user }],
-      }),
-    };
-  }
-
-  if (provider === 'openai') {
-    return {
-      url: 'https://api.openai.com/v1/chat/completions',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        max_completion_tokens: 1024,
-        stream: true,
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: user },
-        ],
-      }),
-    };
-  }
-
-  throw new Error(`Unknown provider: ${provider}`);
-}
-
-function extractAnthropicDelta(data) {
-  if (data.type === 'content_block_delta' && data.delta?.type === 'text_delta') {
-    return data.delta.text;
-  }
-  return '';
-}
-
-function extractOpenAIDelta(data) {
-  return data.choices?.[0]?.delta?.content || '';
-}
-
 async function generate() {
   clearError();
   els.outputActions.classList.add('hidden');
@@ -303,16 +329,18 @@ async function generate() {
     await persistModelChoice();
     await migrateLegacyKey();
 
-    const keyField = provider === 'anthropic' ? 'anthropicApiKey' : 'openaiApiKey';
-    const stored = await chrome.storage.sync.get(keyField);
-    const apiKey = stored[keyField];
-
-    if (!apiKey) {
-      const providerName = provider === 'anthropic' ? 'Anthropic' : 'OpenAI';
-      throw new Error(`No ${providerName} API key configured. Open Settings to add one.`);
+    const config = PROVIDERS[provider];
+    if (!config) {
+      throw new Error(`Unknown provider: ${provider}`);
     }
 
-    const { url, headers, body } = buildRequest({ provider, model, apiKey, system, user });
+    const stored = await chrome.storage.sync.get(config.keyField);
+    const apiKey = stored[config.keyField];
+    if (!apiKey) {
+      throw new Error(`No ${config.name} API key configured. Open Settings to add one.`);
+    }
+
+    const { url, headers, body } = config.buildRequest({ model, apiKey, system, user });
 
     const response = await fetch(url, { method: 'POST', headers, body });
 
@@ -326,7 +354,7 @@ async function generate() {
       throw new Error(`HTTP ${response.status}: ${errMsg}`);
     }
 
-    const extractDelta = provider === 'anthropic' ? extractAnthropicDelta : extractOpenAIDelta;
+    const extractDelta = config.extractDelta;
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';

@@ -77,14 +77,27 @@
           <option value="o1">o1 (reasoning)</option>
           <option value="o1-mini">o1-mini (reasoning)</option>
         </optgroup>
+        <optgroup label="DeepSeek">
+          <option value="deepseek-chat">DeepSeek Chat (V3)</option>
+          <option value="deepseek-reasoner">DeepSeek Reasoner (R1)</option>
+        </optgroup>
+        <optgroup label="Qwen (Alibaba)">
+          <option value="qwen-max">Qwen Max — most capable</option>
+          <option value="qwen-plus">Qwen Plus — balanced</option>
+          <option value="qwen-turbo">Qwen Turbo — fastest</option>
+          <option value="qwen-max-longcontext">Qwen Max (long context)</option>
+          <option value="qwq-32b-preview">QwQ 32B (reasoning preview)</option>
+        </optgroup>
         <option value="__custom__">Custom model ID...</option>
       </select>
       <div id="custom-row" class="custom-row hidden">
         <select id="custom-provider" class="custom-provider">
           <option value="anthropic">Anthropic</option>
           <option value="openai">OpenAI</option>
+          <option value="deepseek">DeepSeek</option>
+          <option value="qwen">Qwen</option>
         </select>
-        <input type="text" id="custom-model" class="custom-model-input" placeholder="model ID, e.g. gpt-4o-2024-08-06" spellcheck="false" autocomplete="off">
+        <input type="text" id="custom-model" class="custom-model-input" placeholder="model ID, e.g. deepseek-chat or qwen-max" spellcheck="false" autocomplete="off">
       </div>
     </div>
 

@@ -102,6 +102,32 @@
     <div class="status" id="openai-status"></div>
   </div>
 
+  <div class="section">
+    <label for="deepseekApiKey">DeepSeek API key</label>
+    <p class="hint">
+      Used for DeepSeek Chat and Reasoner models. Stored locally; only sent to api.deepseek.com.
+      Get a key at <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener">platform.deepseek.com/api_keys</a>.
+    </p>
+    <div class="row">
+      <input type="password" id="deepseekApiKey" placeholder="sk-..." autocomplete="off" spellcheck="false">
+      <button class="secondary toggle-visibility" type="button" data-target="deepseekApiKey">Show</button>
+    </div>
+    <div class="status" id="deepseek-status"></div>
+  </div>
+
+  <div class="section">
+    <label for="qwenApiKey">Qwen / DashScope API key</label>
+    <p class="hint">
+      Used for Qwen and QwQ models via Alibaba DashScope (international endpoint). Stored locally; only sent to dashscope-intl.aliyuncs.com.
+      Get a key at <a href="https://dashscope.console.aliyun.com/apiKey" target="_blank" rel="noopener">dashscope.console.aliyun.com/apiKey</a>.
+    </p>
+    <div class="row">
+      <input type="password" id="qwenApiKey" placeholder="sk-..." autocomplete="off" spellcheck="false">
+      <button class="secondary toggle-visibility" type="button" data-target="qwenApiKey">Show</button>
+    </div>
+    <div class="status" id="qwen-status"></div>
+  </div>
+
   <div class="row" style="justify-content: flex-start; align-items: center;">
     <button id="save" type="button">Save settings</button>
     <span class="status" id="save-status" style="margin-left: 12px; margin-top: 0;"></span>
