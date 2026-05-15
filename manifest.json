@@ -4,7 +4,10 @@
   "version": "1.0.0",
   "description": "AI assistant in your sidebar for writing LinkedIn notes, cold messages, emails, and follow-ups. Powered by Claude.",
   "permissions": ["sidePanel", "storage", "activeTab", "scripting"],
-  "host_permissions": ["https://api.anthropic.com/*"],
+  "host_permissions": [
+    "https://api.anthropic.com/*",
+    "https://api.openai.com/*"
+  ],
   "background": {
     "service_worker": "background.js"
   },

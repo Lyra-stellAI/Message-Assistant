@@ -99,6 +99,8 @@ const els = {
   tone: document.getElementById('tone'),
   length: document.getElementById('length'),
   model: document.getElementById('model'),
+  customRow: document.getElementById('custom-row'),
+  customProvider: document.getElementById('custom-provider'),
   customModel: document.getElementById('custom-model'),
   generate: document.getElementById('generate'),
   output: document.getElementById('output'),
@@ -114,21 +116,50 @@ const els = {
 };
 
 const PRESET_MODELS = new Set(
-  Array.from(els.model.options).map((o) => o.value).filter((v) => v !== '__custom__'),
+  Array.from(els.model.querySelectorAll('optgroup option'))
+    .map((o) => o.value)
+    .filter((v) => v && v !== '__custom__'),
 );
 
+function inferProvider(model) {
+  if (!model) return null;
+  if (model.startsWith('claude-')) return 'anthropic';
+  if (model.startsWith('gpt-') || model.startsWith('chatgpt-') || /^o\d/.test(model)) return 'openai';
+  return null;
+}
+
+async function migrateLegacyKey() {
+  const stored = await chrome.storage.sync.get(['apiKey', 'anthropicApiKey']);
+  if (stored.apiKey && !stored.anthropicApiKey) {
+    await chrome.storage.sync.set({ anthropicApiKey: stored.apiKey });
+    await chrome.storage.sync.remove('apiKey');
+  }
+}
+
+async function checkApiKey() {
+  await migrateLegacyKey();
+  const { anthropicApiKey, openaiApiKey } = await chrome.storage.sync.get([
+    'anthropicApiKey',
+    'openaiApiKey',
+  ]);
+  const hasAnyKey = !!(anthropicApiKey || openaiApiKey);
+  els.noKeyWarning.classList.toggle('hidden', hasAnyKey);
+  return hasAnyKey;
+}
+
 async function loadModel() {
-  const { model } = await chrome.storage.sync.get('model');
+  const { model, provider } = await chrome.storage.sync.get(['model', 'provider']);
   const saved = model || 'claude-opus-4-7';
 
   if (PRESET_MODELS.has(saved)) {
     els.model.value = saved;
-    els.customModel.classList.add('hidden');
+    els.customRow.classList.add('hidden');
     els.customModel.value = '';
   } else {
     els.model.value = '__custom__';
-    els.customModel.classList.remove('hidden');
+    els.customRow.classList.remove('hidden');
     els.customModel.value = saved;
+    els.customProvider.value = provider || inferProvider(saved) || 'anthropic';
   }
 }
 
@@ -139,15 +170,18 @@ function getEffectiveModel() {
   return els.model.value;
 }
 
-async function persistModel(value) {
-  if (!value) return;
-  await chrome.storage.sync.set({ model: value });
+function getEffectiveProvider() {
+  if (els.model.value === '__custom__') {
+    return els.customProvider.value;
+  }
+  return inferProvider(els.model.value) || 'anthropic';
 }
 
-async function checkApiKey() {
-  const { apiKey } = await chrome.storage.sync.get('apiKey');
-  els.noKeyWarning.classList.toggle('hidden', !!apiKey);
-  return !!apiKey;
+async function persistModelChoice() {
+  const model = getEffectiveModel();
+  const provider = getEffectiveProvider();
+  if (!model) return;
+  await chrome.storage.sync.set({ model, provider });
 }
 
 function buildPrompt() {
@@ -200,25 +234,10 @@ function updateCharCount() {
   els.charCount.classList.toggle('hidden', !text);
 }
 
-async function generate() {
-  if (!(await checkApiKey())) return;
-
-  clearError();
-  els.outputActions.classList.add('hidden');
-  els.output.textContent = '';
-  els.charCount.classList.add('hidden');
-  els.generate.disabled = true;
-  els.generate.textContent = 'Generating...';
-
-  const { system, user } = buildPrompt();
-
-  try {
-    const { apiKey } = await chrome.storage.sync.get('apiKey');
-    const model = getEffectiveModel();
-    await persistModel(model);
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
+function buildRequest({ provider, model, apiKey, system, user }) {
+  if (provider === 'anthropic') {
+    return {
+      url: 'https://api.anthropic.com/v1/messages',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
@@ -232,7 +251,70 @@ async function generate() {
         system,
         messages: [{ role: 'user', content: user }],
       }),
-    });
+    };
+  }
+
+  if (provider === 'openai') {
+    return {
+      url: 'https://api.openai.com/v1/chat/completions',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        max_completion_tokens: 1024,
+        stream: true,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: user },
+        ],
+      }),
+    };
+  }
+
+  throw new Error(`Unknown provider: ${provider}`);
+}
+
+function extractAnthropicDelta(data) {
+  if (data.type === 'content_block_delta' && data.delta?.type === 'text_delta') {
+    return data.delta.text;
+  }
+  return '';
+}
+
+function extractOpenAIDelta(data) {
+  return data.choices?.[0]?.delta?.content || '';
+}
+
+async function generate() {
+  clearError();
+  els.outputActions.classList.add('hidden');
+  els.output.textContent = '';
+  els.charCount.classList.add('hidden');
+  els.generate.disabled = true;
+  els.generate.textContent = 'Generating...';
+
+  const provider = getEffectiveProvider();
+  const model = getEffectiveModel();
+  const { system, user } = buildPrompt();
+
+  try {
+    await persistModelChoice();
+    await migrateLegacyKey();
+
+    const keyField = provider === 'anthropic' ? 'anthropicApiKey' : 'openaiApiKey';
+    const stored = await chrome.storage.sync.get(keyField);
+    const apiKey = stored[keyField];
+
+    if (!apiKey) {
+      const providerName = provider === 'anthropic' ? 'Anthropic' : 'OpenAI';
+      throw new Error(`No ${providerName} API key configured. Open Settings to add one.`);
+    }
+
+    const { url, headers, body } = buildRequest({ provider, model, apiKey, system, user });
+
+    const response = await fetch(url, { method: 'POST', headers, body });
 
     if (!response.ok) {
       const errText = await response.text();
@@ -244,6 +326,7 @@ async function generate() {
       throw new Error(`HTTP ${response.status}: ${errMsg}`);
     }
 
+    const extractDelta = provider === 'anthropic' ? extractAnthropicDelta : extractOpenAIDelta;
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
@@ -259,8 +342,8 @@ async function generate() {
 
       for (const line of lines) {
         if (!line.startsWith('data: ')) continue;
-        const dataStr = line.slice(6);
-        if (!dataStr) continue;
+        const dataStr = line.slice(6).trim();
+        if (!dataStr || dataStr === '[DONE]') continue;
 
         let data;
         try {
@@ -269,12 +352,15 @@ async function generate() {
           continue;
         }
 
-        if (data.type === 'content_block_delta' && data.delta?.type === 'text_delta') {
-          fullText += data.delta.text;
+        if (data.error) {
+          throw new Error(data.error?.message || 'Stream error');
+        }
+
+        const text = extractDelta(data);
+        if (text) {
+          fullText += text;
           els.output.textContent = fullText;
           updateCharCount();
-        } else if (data.type === 'error') {
-          throw new Error(data.error?.message || 'Stream error');
         }
       }
     }
@@ -386,16 +472,15 @@ els.template.addEventListener('change', () => {
 });
 els.model.addEventListener('change', async () => {
   const isCustom = els.model.value === '__custom__';
-  els.customModel.classList.toggle('hidden', !isCustom);
+  els.customRow.classList.toggle('hidden', !isCustom);
   if (isCustom) {
     els.customModel.focus();
   } else {
-    await persistModel(els.model.value);
+    await persistModelChoice();
   }
 });
-els.customModel.addEventListener('change', async () => {
-  await persistModel(els.customModel.value.trim());
-});
+els.customProvider.addEventListener('change', persistModelChoice);
+els.customModel.addEventListener('change', persistModelChoice);
 els.openSettings.addEventListener('click', () => chrome.runtime.openOptionsPage());
 els.gotoSettings?.addEventListener('click', (e) => {
   e.preventDefault();

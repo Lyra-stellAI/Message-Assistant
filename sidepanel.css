@@ -213,6 +213,19 @@ input:focus {
   display: none !important;
 }
 
-.custom-model-input {
+.custom-row {
+  display: flex;
+  gap: 6px;
   margin-top: 6px;
+}
+
+.custom-row .custom-provider {
+  width: auto;
+  flex-shrink: 0;
+  padding-right: 24px;
+}
+
+.custom-row .custom-model-input {
+  flex: 1;
+  min-width: 0;
 }

@@ -1,60 +1,118 @@
-const apiKeyEl = document.getElementById('apiKey');
+const anthropicInput = document.getElementById('anthropicApiKey');
+const openaiInput = document.getElementById('openaiApiKey');
 const saveBtn = document.getElementById('save');
-const toggleBtn = document.getElementById('toggle-visibility');
 const saveStatus = document.getElementById('save-status');
-const keyStatus = document.getElementById('key-status');
+const anthropicStatus = document.getElementById('anthropic-status');
+const openaiStatus = document.getElementById('openai-status');
+const toggleBtns = document.querySelectorAll('.toggle-visibility');
 
-async function loadSettings() {
-  const { apiKey } = await chrome.storage.sync.get('apiKey');
-  if (apiKey) {
-    apiKeyEl.value = apiKey;
-    keyStatus.textContent = 'API key saved.';
-    keyStatus.className = 'status success';
-  } else {
-    keyStatus.textContent = 'No API key configured yet.';
-    keyStatus.className = 'status error';
+async function migrateLegacyKey() {
+  const stored = await chrome.storage.sync.get(['apiKey', 'anthropicApiKey']);
+  if (stored.apiKey && !stored.anthropicApiKey) {
+    await chrome.storage.sync.set({ anthropicApiKey: stored.apiKey });
+    await chrome.storage.sync.remove('apiKey');
   }
 }
 
+function setStatus(el, present) {
+  if (present) {
+    el.textContent = 'Saved.';
+    el.className = 'status success';
+  } else {
+    el.textContent = 'Not configured.';
+    el.className = 'status error';
+  }
+}
+
+async function loadSettings() {
+  await migrateLegacyKey();
+  const { anthropicApiKey, openaiApiKey } = await chrome.storage.sync.get([
+    'anthropicApiKey',
+    'openaiApiKey',
+  ]);
+  if (anthropicApiKey) anthropicInput.value = anthropicApiKey;
+  if (openaiApiKey) openaiInput.value = openaiApiKey;
+  setStatus(anthropicStatus, !!anthropicApiKey);
+  setStatus(openaiStatus, !!openaiApiKey);
+}
+
+function validateAnthropic(key) {
+  if (!key) return { ok: true };
+  if (!key.startsWith('sk-ant-')) {
+    return { ok: false, msg: 'Anthropic key should start with "sk-ant-".' };
+  }
+  return { ok: true };
+}
+
+function validateOpenAI(key) {
+  if (!key) return { ok: true };
+  if (!key.startsWith('sk-')) {
+    return { ok: false, msg: 'OpenAI key should start with "sk-".' };
+  }
+  return { ok: true };
+}
+
 async function saveSettings() {
-  const apiKey = apiKeyEl.value.trim();
+  const anthropic = anthropicInput.value.trim();
+  const openai = openaiInput.value.trim();
 
-  if (!apiKey) {
-    saveStatus.textContent = 'API key cannot be empty.';
+  if (!anthropic && !openai) {
+    saveStatus.textContent = 'Add at least one API key.';
     saveStatus.className = 'status error';
     return;
   }
 
-  if (!apiKey.startsWith('sk-ant-')) {
-    saveStatus.textContent = 'That does not look like an Anthropic API key (should start with "sk-ant-").';
+  const aCheck = validateAnthropic(anthropic);
+  if (!aCheck.ok) {
+    saveStatus.textContent = aCheck.msg;
+    saveStatus.className = 'status error';
+    return;
+  }
+  const oCheck = validateOpenAI(openai);
+  if (!oCheck.ok) {
+    saveStatus.textContent = oCheck.msg;
     saveStatus.className = 'status error';
     return;
   }
 
-  await chrome.storage.sync.set({ apiKey });
+  const updates = {};
+  const removes = [];
+  if (anthropic) updates.anthropicApiKey = anthropic;
+  else removes.push('anthropicApiKey');
+  if (openai) updates.openaiApiKey = openai;
+  else removes.push('openaiApiKey');
+
+  if (Object.keys(updates).length) await chrome.storage.sync.set(updates);
+  if (removes.length) await chrome.storage.sync.remove(removes);
+
+  setStatus(anthropicStatus, !!anthropic);
+  setStatus(openaiStatus, !!openai);
   saveStatus.textContent = 'Saved.';
   saveStatus.className = 'status success';
-  keyStatus.textContent = 'API key saved.';
-  keyStatus.className = 'status success';
 
   setTimeout(() => {
     saveStatus.textContent = '';
   }, 2000);
 }
 
-toggleBtn.addEventListener('click', () => {
-  if (apiKeyEl.type === 'password') {
-    apiKeyEl.type = 'text';
-    toggleBtn.textContent = 'Hide';
-  } else {
-    apiKeyEl.type = 'password';
-    toggleBtn.textContent = 'Show';
-  }
+toggleBtns.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const target = document.getElementById(btn.dataset.target);
+    if (target.type === 'password') {
+      target.type = 'text';
+      btn.textContent = 'Hide';
+    } else {
+      target.type = 'password';
+      btn.textContent = 'Show';
+    }
+  });
 });
 
 saveBtn.addEventListener('click', saveSettings);
-apiKeyEl.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') saveSettings();
+[anthropicInput, openaiInput].forEach((input) => {
+  input.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') saveSettings();
+  });
 });
 
 loadSettings();

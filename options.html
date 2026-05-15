@@ -74,19 +74,32 @@
 </head>
 <body>
   <h1>Web Assistant settings</h1>
-  <p class="subtitle">Configure your Anthropic API key. Model selection now lives on the side panel — switch any time without coming back here.</p>
+  <p class="subtitle">Configure your API keys. You only need a key for the providers you want to use. Model selection lives on the side panel — switch any time without coming back here.</p>
 
   <div class="section">
-    <label for="apiKey">Anthropic API key</label>
+    <label for="anthropicApiKey">Anthropic API key</label>
     <p class="hint">
-      Stored locally in your browser, never sent anywhere except api.anthropic.com.
+      Used for Claude models (Opus, Sonnet, Haiku). Stored locally; only sent to api.anthropic.com.
       Get a key at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com/settings/keys</a>.
     </p>
     <div class="row">
-      <input type="password" id="apiKey" placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
-      <button id="toggle-visibility" class="secondary" type="button">Show</button>
+      <input type="password" id="anthropicApiKey" placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
+      <button class="secondary toggle-visibility" type="button" data-target="anthropicApiKey">Show</button>
     </div>
-    <div class="status" id="key-status"></div>
+    <div class="status" id="anthropic-status"></div>
+  </div>
+
+  <div class="section">
+    <label for="openaiApiKey">OpenAI API key</label>
+    <p class="hint">
+      Used for GPT and o-series models. Stored locally; only sent to api.openai.com.
+      Get a key at <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com/api-keys</a>.
+    </p>
+    <div class="row">
+      <input type="password" id="openaiApiKey" placeholder="sk-..." autocomplete="off" spellcheck="false">
+      <button class="secondary toggle-visibility" type="button" data-target="openaiApiKey">Show</button>
+    </div>
+    <div class="status" id="openai-status"></div>
   </div>
 
   <div class="row" style="justify-content: flex-start; align-items: center;">
