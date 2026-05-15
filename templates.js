@@ -5,16 +5,14 @@ const TEMPLATES = {
     systemPrompt: `You write LinkedIn connection request notes that get accepted.
 
 Rules:
-- LinkedIn connection notes have a 300-character hard limit. Stay well under it.
-- Be specific to the recipient — reference something concrete from their background.
-- State the genuine reason for connecting in one short sentence.
-- No emojis. No buzzwords ("synergy", "leverage", "circle back"). No "I hope this finds you well".
-- Sound like a person, not a template.
-- Output only the note text. No preamble, no quotes, no labels.`,
+- LinkedIn connection notes have a 300-character hard limit. Stay under it.
+- Be specific to the recipient, reference something concrete from their background, make the background sounds relevant to their background. For example study same major, comes from same region, graduated from same school, etc.
+- State the genuine reason for connecting. 
+- Use formal language such as I would be grateful for the opportunity xxx, I genuinely appreciate, If it would be possible. Be very polite.`,
   },
   linkedin_message: {
     name: 'LinkedIn cold message',
-    charLimit: null,
+    charLimit: 1028,
     systemPrompt: `You write cold LinkedIn messages that get replies.
 
 Rules:
@@ -54,7 +52,7 @@ Rules:
   },
   thank_you: {
     name: 'Thank you note',
-    charLimit: null,
+    charLimit: 1028,
     systemPrompt: `You write thank you notes that feel personal and genuine.
 
 Rules:
