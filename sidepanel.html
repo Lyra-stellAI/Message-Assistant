@@ -101,6 +101,15 @@
       </div>
     </div>
 
+    <details id="prompt-details" class="prompt-details">
+      <summary>
+        <span>View system prompt</span>
+        <span id="prompt-customized-badge" class="badge hidden">customized</span>
+      </summary>
+      <pre id="prompt-preview" class="prompt-preview"></pre>
+      <a href="#" id="edit-prompts-link" class="edit-prompts-link">Edit prompts in Settings</a>
+    </details>
+
     <button id="generate" class="primary-btn" type="button">Generate</button>
 
     <div class="output-section">
@@ -118,6 +127,7 @@
     </div>
   </main>
 
+  <script src="templates.js"></script>
   <script src="sidepanel.js"></script>
 </body>
 </html>

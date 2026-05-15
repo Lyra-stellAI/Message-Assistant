@@ -12,10 +12,77 @@
       color: #1a1a1a;
       background: #fafafa;
       padding: 40px 20px;
-      max-width: 600px;
+      max-width: 720px;
       margin: 0 auto;
       line-height: 1.5;
     }
+    textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #d4d4d4;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: white;
+      color: #1a1a1a;
+      resize: vertical;
+      min-height: 100px;
+      line-height: 1.5;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #737373;
+      box-shadow: 0 0 0 2px rgba(115, 115, 115, 0.15);
+    }
+    .prompt-editor { margin-bottom: 10px; }
+    .prompt-editor summary {
+      cursor: pointer;
+      padding: 8px 4px;
+      font-weight: 500;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .prompt-editor summary:hover { color: #1a1a1a; }
+    .prompt-editor[open] summary { border-bottom: 1px solid #f0f0f0; margin-bottom: 10px; }
+    .prompt-editor .badge {
+      display: inline-block;
+      padding: 1px 6px;
+      background: #fef3c7;
+      color: #78350f;
+      border: 1px solid #fde68a;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 500;
+    }
+    .default-prompt-label, .override-prompt-label {
+      font-size: 12px;
+      color: #525252;
+      font-weight: 500;
+      margin-top: 8px;
+      margin-bottom: 4px;
+    }
+    .default-prompt {
+      margin: 0;
+      padding: 10px;
+      background: #f5f5f5;
+      border: 1px solid #e5e5e5;
+      border-radius: 4px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #404040;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .prompt-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      align-items: center;
+    }
+    .prompt-actions .status { margin: 0; }
     h1 { font-size: 22px; margin-bottom: 8px; }
     .subtitle { color: #737373; margin-bottom: 24px; font-size: 13px; }
     .section {
@@ -133,10 +200,18 @@
     <span class="status" id="save-status" style="margin-left: 12px; margin-top: 0;"></span>
   </div>
 
+  <h1 style="margin-top: 40px;">Custom prompts</h1>
+  <p class="subtitle">Override the built-in system prompt for each message type. Leave an override empty to use the default. Tone and length descriptors are still appended automatically.</p>
+
+  <div class="section" id="prompts-section">
+    <!-- Populated by options.js -->
+  </div>
+
   <div class="footer">
     <p>Open the assistant via the extension icon in the toolbar, or with the keyboard shortcut you assign at <code>chrome://extensions/shortcuts</code>.</p>
   </div>
 
+  <script src="templates.js"></script>
   <script src="options.js"></script>
 </body>
 </html>
