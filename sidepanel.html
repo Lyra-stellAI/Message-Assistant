@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Web Assistant</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <header>
+    <h1>Web Assistant</h1>
+    <button id="open-settings" class="icon-btn" type="button" title="Settings">Settings</button>
+  </header>
+
+  <main>
+    <div id="no-key-warning" class="warning hidden">
+      <p>No API key yet. <a href="#" id="goto-settings">Open settings</a> to add your Anthropic API key.</p>
+    </div>
+
+    <div class="form-section">
+      <label for="template">Message type</label>
+      <select id="template">
+        <option value="linkedin_connection">LinkedIn connection note</option>
+        <option value="linkedin_message">LinkedIn cold message</option>
+        <option value="cold_email">Cold email</option>
+        <option value="followup">Follow-up</option>
+        <option value="thank_you">Thank you note</option>
+        <option value="custom">Custom message</option>
+      </select>
+    </div>
+
+    <div class="form-section">
+      <label for="context">About the recipient</label>
+      <textarea id="context" rows="4" placeholder="Paste their LinkedIn profile, role, company, something specific you noticed..."></textarea>
+    </div>
+
+    <div class="form-section">
+      <label for="goal">What do you want to say?</label>
+      <textarea id="goal" rows="3" placeholder="Your reason for reaching out, your ask, key talking points..."></textarea>
+    </div>
+
+    <div class="form-row">
+      <div class="form-section flex-1">
+        <label for="tone">Tone</label>
+        <select id="tone">
+          <option value="professional">Professional</option>
+          <option value="friendly" selected>Friendly</option>
+          <option value="casual">Casual</option>
+          <option value="direct">Direct</option>
+          <option value="warm">Warm</option>
+        </select>
+      </div>
+      <div class="form-section flex-1">
+        <label for="length">Length</label>
+        <select id="length">
+          <option value="short">Short</option>
+          <option value="medium" selected>Medium</option>
+          <option value="long">Long</option>
+        </select>
+      </div>
+    </div>
+
+    <button id="generate" class="primary-btn" type="button">Generate</button>
+
+    <div class="output-section">
+      <div class="output-header">
+        <label>Output</label>
+        <div class="output-actions hidden" id="output-actions">
+          <button id="copy-btn" class="action-btn" type="button">Copy</button>
+          <button id="insert-btn" class="action-btn" type="button" title="Insert into focused text field on the active tab">Insert</button>
+          <button id="regenerate-btn" class="action-btn" type="button">Regenerate</button>
+        </div>
+      </div>
+      <div id="output" class="output" contenteditable="true" placeholder="Generated message will appear here. You can edit it before copying or inserting."></div>
+      <div id="char-count" class="char-count hidden"></div>
+      <div id="error" class="error hidden"></div>
+    </div>
+  </main>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Web Assistant — Settings</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      color: #1a1a1a;
+      background: #fafafa;
+      padding: 40px 20px;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+    h1 { font-size: 22px; margin-bottom: 8px; }
+    .subtitle { color: #737373; margin-bottom: 24px; font-size: 13px; }
+    .section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #e5e5e5;
+      margin-bottom: 16px;
+    }
+    label { display: block; font-weight: 500; margin-bottom: 6px; font-size: 13px; }
+    .hint { font-size: 12px; color: #737373; margin-bottom: 8px; }
+    input[type="password"], input[type="text"], select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #d4d4d4;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: inherit;
+      background: white;
+      color: #1a1a1a;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #737373;
+      box-shadow: 0 0 0 2px rgba(115, 115, 115, 0.15);
+    }
+    .row { display: flex; gap: 8px; align-items: stretch; margin-top: 8px; }
+    .row input { flex: 1; }
+    button {
+      padding: 8px 16px;
+      background: #1a1a1a;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    button:hover { background: #404040; }
+    button.secondary { background: white; color: #1a1a1a; border: 1px solid #d4d4d4; }
+    button.secondary:hover { background: #f5f5f5; }
+    .status { font-size: 12px; margin-top: 8px; min-height: 1em; }
+    .status.success { color: #15803d; }
+    .status.error { color: #991b1b; }
+    a { color: #1a1a1a; }
+    .footer { margin-top: 24px; color: #737373; font-size: 12px; }
+    .footer code {
+      background: white;
+      padding: 1px 5px;
+      border: 1px solid #e5e5e5;
+      border-radius: 3px;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Web Assistant settings</h1>
+  <p class="subtitle">Configure your Anthropic API key and preferred model.</p>
+
+  <div class="section">
+    <label for="apiKey">Anthropic API key</label>
+    <p class="hint">
+      Stored locally in your browser, never sent anywhere except api.anthropic.com.
+      Get a key at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com/settings/keys</a>.
+    </p>
+    <div class="row">
+      <input type="password" id="apiKey" placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
+      <button id="toggle-visibility" class="secondary" type="button">Show</button>
+    </div>
+    <div class="status" id="key-status"></div>
+  </div>
+
+  <div class="section">
+    <label for="model">Model</label>
+    <p class="hint">Opus is the most capable. Sonnet is a good speed / cost balance. Haiku is fastest and cheapest.</p>
+    <select id="model">
+      <option value="claude-opus-4-7">Claude Opus 4.7 (most capable)</option>
+      <option value="claude-sonnet-4-6">Claude Sonnet 4.6 (balanced)</option>
+      <option value="claude-haiku-4-5">Claude Haiku 4.5 (fastest)</option>
+    </select>
+  </div>
+
+  <div class="row" style="justify-content: flex-start; align-items: center;">
+    <button id="save" type="button">Save settings</button>
+    <span class="status" id="save-status" style="margin-left: 12px; margin-top: 0;"></span>
+  </div>
+
+  <div class="footer">
+    <p>Open the assistant via the extension icon in the toolbar, or with the keyboard shortcut you assign at <code>chrome://extensions/shortcuts</code>.</p>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
