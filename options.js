@@ -1,12 +1,11 @@
 const apiKeyEl = document.getElementById('apiKey');
-const modelEl = document.getElementById('model');
 const saveBtn = document.getElementById('save');
 const toggleBtn = document.getElementById('toggle-visibility');
 const saveStatus = document.getElementById('save-status');
 const keyStatus = document.getElementById('key-status');
 
 async function loadSettings() {
-  const { apiKey, model } = await chrome.storage.sync.get(['apiKey', 'model']);
+  const { apiKey } = await chrome.storage.sync.get('apiKey');
   if (apiKey) {
     apiKeyEl.value = apiKey;
     keyStatus.textContent = 'API key saved.';
@@ -15,12 +14,10 @@ async function loadSettings() {
     keyStatus.textContent = 'No API key configured yet.';
     keyStatus.className = 'status error';
   }
-  modelEl.value = model || 'claude-opus-4-7';
 }
 
 async function saveSettings() {
   const apiKey = apiKeyEl.value.trim();
-  const model = modelEl.value;
 
   if (!apiKey) {
     saveStatus.textContent = 'API key cannot be empty.';
@@ -34,7 +31,7 @@ async function saveSettings() {
     return;
   }
 
-  await chrome.storage.sync.set({ apiKey, model });
+  await chrome.storage.sync.set({ apiKey });
   saveStatus.textContent = 'Saved.';
   saveStatus.className = 'status success';
   keyStatus.textContent = 'API key saved.';

@@ -212,3 +212,7 @@ input:focus {
 .hidden {
   display: none !important;
 }
+
+.custom-model-input {
+  margin-top: 6px;
+}

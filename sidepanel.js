@@ -98,6 +98,8 @@ const els = {
   goal: document.getElementById('goal'),
   tone: document.getElementById('tone'),
   length: document.getElementById('length'),
+  model: document.getElementById('model'),
+  customModel: document.getElementById('custom-model'),
   generate: document.getElementById('generate'),
   output: document.getElementById('output'),
   charCount: document.getElementById('char-count'),
@@ -110,6 +112,37 @@ const els = {
   gotoSettings: document.getElementById('goto-settings'),
   noKeyWarning: document.getElementById('no-key-warning'),
 };
+
+const PRESET_MODELS = new Set(
+  Array.from(els.model.options).map((o) => o.value).filter((v) => v !== '__custom__'),
+);
+
+async function loadModel() {
+  const { model } = await chrome.storage.sync.get('model');
+  const saved = model || 'claude-opus-4-7';
+
+  if (PRESET_MODELS.has(saved)) {
+    els.model.value = saved;
+    els.customModel.classList.add('hidden');
+    els.customModel.value = '';
+  } else {
+    els.model.value = '__custom__';
+    els.customModel.classList.remove('hidden');
+    els.customModel.value = saved;
+  }
+}
+
+function getEffectiveModel() {
+  if (els.model.value === '__custom__') {
+    return els.customModel.value.trim() || 'claude-opus-4-7';
+  }
+  return els.model.value;
+}
+
+async function persistModel(value) {
+  if (!value) return;
+  await chrome.storage.sync.set({ model: value });
+}
 
 async function checkApiKey() {
   const { apiKey } = await chrome.storage.sync.get('apiKey');
@@ -180,7 +213,9 @@ async function generate() {
   const { system, user } = buildPrompt();
 
   try {
-    const { apiKey, model } = await chrome.storage.sync.get(['apiKey', 'model']);
+    const { apiKey } = await chrome.storage.sync.get('apiKey');
+    const model = getEffectiveModel();
+    await persistModel(model);
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -191,7 +226,7 @@ async function generate() {
         'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
-        model: model || 'claude-opus-4-7',
+        model,
         max_tokens: 1024,
         stream: true,
         system,
@@ -349,6 +384,18 @@ els.output.addEventListener('input', updateCharCount);
 els.template.addEventListener('change', () => {
   if (els.output.innerText.trim()) updateCharCount();
 });
+els.model.addEventListener('change', async () => {
+  const isCustom = els.model.value === '__custom__';
+  els.customModel.classList.toggle('hidden', !isCustom);
+  if (isCustom) {
+    els.customModel.focus();
+  } else {
+    await persistModel(els.model.value);
+  }
+});
+els.customModel.addEventListener('change', async () => {
+  await persistModel(els.customModel.value.trim());
+});
 els.openSettings.addEventListener('click', () => chrome.runtime.openOptionsPage());
 els.gotoSettings?.addEventListener('click', (e) => {
   e.preventDefault();
@@ -356,3 +403,4 @@ els.gotoSettings?.addEventListener('click', (e) => {
 });
 
 checkApiKey();
+loadModel();
