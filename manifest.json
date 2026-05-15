@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Web Assistant",
+  "name": "Message Assistant",
   "version": "1.0.0",
   "description": "AI assistant in your sidebar for writing LinkedIn notes, cold messages, emails, and follow-ups. Powered by Claude.",
   "permissions": ["sidePanel", "storage", "activeTab", "scripting"],
@@ -15,7 +15,7 @@
     "service_worker": "background.js"
   },
   "action": {
-    "default_title": "Open Web Assistant"
+    "default_title": "Open Message Assistant"
   },
   "side_panel": {
     "default_path": "sidepanel.html"
