@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Message Assistant</title>
+  <title>Web Assistant</title>
   <link rel="stylesheet" href="sidepanel.css">
 </head>
 <body>
   <header>
-    <h1>Message Assistant</h1>
+    <h1>Web Assistant</h1>
     <button id="open-settings" class="icon-btn" type="button" title="Settings">Settings</button>
   </header>
 
@@ -56,23 +56,61 @@
           <option value="claude-sonnet-4-5">Claude Sonnet 4.5</option>
         </optgroup>
         <optgroup label="OpenAI">
-          <option value="gpt-4o">GPT-4o</option>
-          <option value="gpt-4o-mini">GPT-4o mini</option>
-          <option value="gpt-4-turbo">GPT-4 Turbo</option>
-          <option value="o1">o1 (reasoning)</option>
-          <option value="o1-mini">o1-mini (reasoning)</option>
-        </optgroup>
+        <!-- Latest / recommended -->
+        <option value="gpt-5.5">GPT-5.5</option>
+        <option value="gpt-5.5-pro">GPT-5.5 Pro</option>
+      
+        <!-- GPT-5.4 family -->
+        <option value="gpt-5.4">GPT-5.4</option>
+        <option value="gpt-5.4-pro">GPT-5.4 Pro</option>
+        <option value="gpt-5.4-mini">GPT-5.4 Mini</option>
+        <option value="gpt-5.4-nano">GPT-5.4 Nano</option>
+      
+        <!-- GPT-5.2 family -->
+        <option value="gpt-5.2">GPT-5.2</option>
+        <option value="gpt-5.2-pro">GPT-5.2 Pro</option>
+      
+        <!-- GPT-5 family -->
+        <option value="gpt-5">GPT-5</option>
+        <option value="gpt-5-mini">GPT-5 Mini</option>
+        <option value="gpt-5-nano">GPT-5 Nano</option>
+      
+        <!-- Older OpenAI models -->
+        <option value="gpt-4.1">GPT-4.1</option>
+        <option value="gpt-4.1-mini">GPT-4.1 Mini</option>
+        <option value="gpt-4o">GPT-4o</option>
+        <option value="gpt-4o-mini">GPT-4o Mini</option>
+        <option value="gpt-4-turbo">GPT-4 Turbo</option>
+      </optgroup>
+        
         <optgroup label="DeepSeek">
           <option value="deepseek-chat">DeepSeek Chat (V3)</option>
           <option value="deepseek-reasoner">DeepSeek Reasoner (R1)</option>
         </optgroup>
-        <optgroup label="Qwen (Alibaba)">
-          <option value="qwen-max">Qwen Max — most capable</option>
-          <option value="qwen-plus">Qwen Plus — balanced</option>
-          <option value="qwen-turbo">Qwen Turbo — fastest</option>
-          <option value="qwen-max-longcontext">Qwen Max (long context)</option>
-          <option value="qwq-32b-preview">QwQ 32B (reasoning preview)</option>
-        </optgroup>
+
+    <optgroup label="Qwen (Alibaba)">
+      <!-- Latest hosted Qwen 3.6 family -->
+      <option value="qwen3.6-max-preview">Qwen3.6 Max Preview — newest preview</option>
+      <option value="qwen3.6-plus">Qwen3.6 Plus — flagship / 1M context</option>
+      <option value="qwen3.6-flash">Qwen3.6 Flash — fast / lower cost</option>
+    
+      <!-- Qwen 3.5 family -->
+      <option value="qwen3.5-plus">Qwen3.5 Plus — strong balanced model</option>
+      <option value="qwen3.5-flash">Qwen3.5 Flash — fast / low cost</option>
+    
+      <!-- Qwen 3 Max / Plus / Flash -->
+      <option value="qwen3-max">Qwen3 Max — most capable stable</option>
+      <option value="qwen3-max-preview">Qwen3 Max Preview — preview</option>
+      <option value="qwen-plus">Qwen Plus — balanced</option>
+      <option value="qwen-plus-latest">Qwen Plus Latest — latest alias</option>
+      <option value="qwen-flash">Qwen Flash — fast / low cost</option>
+      <option value="qwen-turbo">Qwen Turbo — legacy fast</option>
+      <!-- Reasoning -->
+      <option value="qwq-plus">QwQ Plus — reasoning</option>
+      <!-- Legacy / older aliases -->
+      <option value="qwen-max">Qwen Max — legacy most capable</option>
+
+    </optgroup>
         <option value="__custom__">Custom model ID...</option>
       </select>
       <div id="custom-row" class="custom-row hidden">
