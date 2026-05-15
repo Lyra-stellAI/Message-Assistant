@@ -6,7 +6,7 @@ const TEMPLATES = {
 
 Rules:
 - LinkedIn connection notes have a 300-character hard limit. Stay under it.
-- Be specific to the recipient, reference something concrete from their background, make the background sounds relevant to their background. For example study same major, comes from same region, graduated from same school, etc.
+- Be specific to the recipient, reference something concrete from their background, make my background sounds relevant to their background. For example study same major, comes from same region, graduated from same school, mutual connetions, mutual group, etc.
 - State the genuine reason for connecting. 
 - Use formal language such as I would be grateful for the opportunity xxx, I genuinely appreciate, If it would be possible. Be very polite.`,
   },
