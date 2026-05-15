@@ -1,8 +1,81 @@
-let customPromptsCache = {};
+let customCache = {
+  customPrompts: {},
+  customTemplates: {},
+  toneOverrides: {},
+  lengthOverrides: {},
+};
 
-async function loadCustomPrompts() {
-  const { customPrompts } = await chrome.storage.sync.get('customPrompts');
-  customPromptsCache = customPrompts || {};
+const DEFAULT_TONE = 'friendly';
+const DEFAULT_LENGTH = 'medium';
+
+async function loadCustomizations() {
+  const storage = await chrome.storage.sync.get(CUSTOM_STORAGE_KEYS);
+  customCache = getCustomizations(storage);
+  rebuildDropdowns();
+}
+
+function rebuildDropdowns() {
+  rebuildTemplateDropdown();
+  rebuildToneDropdown();
+  rebuildLengthDropdown();
+}
+
+function rebuildTemplateDropdown() {
+  const prev = els.template.value;
+  els.template.innerHTML = '';
+  const builtIns = getEffectiveTemplates(customCache).filter((t) => !t.isCustom);
+  const customs = getEffectiveTemplates(customCache).filter((t) => t.isCustom);
+
+  for (const t of builtIns) {
+    const opt = document.createElement('option');
+    opt.value = t.key;
+    opt.textContent = t.name;
+    els.template.appendChild(opt);
+  }
+  if (customs.length) {
+    const group = document.createElement('optgroup');
+    group.label = 'Your message types';
+    for (const t of customs) {
+      const opt = document.createElement('option');
+      opt.value = t.key;
+      opt.textContent = t.name;
+      group.appendChild(opt);
+    }
+    els.template.appendChild(group);
+  }
+
+  const all = [...builtIns, ...customs];
+  els.template.value = all.some((t) => t.key === prev) ? prev : all[0]?.key || '';
+}
+
+function rebuildToneDropdown() {
+  const prev = els.tone.value || DEFAULT_TONE;
+  els.tone.innerHTML = '';
+  const tones = getEffectiveTones(customCache);
+  for (const t of tones) {
+    const opt = document.createElement('option');
+    opt.value = t.key;
+    opt.textContent = t.label;
+    els.tone.appendChild(opt);
+  }
+  els.tone.value = tones.some((t) => t.key === prev) ? prev : DEFAULT_TONE;
+}
+
+function rebuildLengthDropdown() {
+  const prev = els.length.value || DEFAULT_LENGTH;
+  els.length.innerHTML = '';
+  const lengths = getEffectiveLengths(customCache);
+  for (const l of lengths) {
+    const opt = document.createElement('option');
+    opt.value = l.key;
+    opt.textContent = l.label;
+    els.length.appendChild(opt);
+  }
+  els.length.value = lengths.some((l) => l.key === prev) ? prev : DEFAULT_LENGTH;
+}
+
+function currentTemplate() {
+  return getEffectiveTemplates(customCache).find((t) => t.key === els.template.value);
 }
 
 const els = {
@@ -213,14 +286,14 @@ async function persistModelChoice() {
 }
 
 function buildPrompt() {
-  const templateKey = els.template.value;
-  const tmpl = TEMPLATES[templateKey];
+  const tmpl = currentTemplate();
+  if (!tmpl) return { system: '', user: '' };
 
   const system = buildSystemPrompt({
-    templateKey,
+    templateKey: tmpl.key,
     tone: els.tone.value,
     length: els.length.value,
-    customPrompts: customPromptsCache,
+    custom: customCache,
   });
 
   const ctx = els.context.value.trim();
@@ -238,17 +311,26 @@ function buildPrompt() {
 }
 
 function updatePromptPreview() {
-  const templateKey = els.template.value;
+  const tmpl = currentTemplate();
+  if (!tmpl) {
+    els.promptPreview.textContent = '';
+    return;
+  }
   const system = buildSystemPrompt({
-    templateKey,
+    templateKey: tmpl.key,
     tone: els.tone.value,
     length: els.length.value,
-    customPrompts: customPromptsCache,
+    custom: customCache,
   });
   els.promptPreview.textContent = system;
   els.promptCustomizedBadge.classList.toggle(
     'hidden',
-    !isCustomPromptActive(templateKey, customPromptsCache),
+    !isAnyCustomizationActive({
+      templateKey: tmpl.key,
+      tone: els.tone.value,
+      length: els.length.value,
+      custom: customCache,
+    }),
   );
 }
 
@@ -263,12 +345,12 @@ function clearError() {
 }
 
 function updateCharCount() {
-  const tmpl = TEMPLATES[els.template.value];
+  const tmpl = currentTemplate();
   const text = els.output.innerText || '';
   const count = text.length;
   const words = text.trim() ? text.trim().split(/\s+/).length : 0;
 
-  if (tmpl.charLimit) {
+  if (tmpl?.charLimit) {
     els.charCount.textContent = `${count} / ${tmpl.charLimit} characters`;
     els.charCount.classList.toggle('over-limit', count > tmpl.charLimit);
   } else {
@@ -476,9 +558,9 @@ els.editPromptsLink?.addEventListener('click', (e) => {
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'sync' && changes.customPrompts) {
-    customPromptsCache = changes.customPrompts.newValue || {};
-    updatePromptPreview();
+  if (area !== 'sync') return;
+  if (CUSTOM_STORAGE_KEYS.some((k) => k in changes)) {
+    loadCustomizations().then(updatePromptPreview);
   }
 });
 els.model.addEventListener('change', async () => {
@@ -500,4 +582,4 @@ els.gotoSettings?.addEventListener('click', (e) => {
 
 checkApiKey();
 loadModel();
-loadCustomPrompts().then(updatePromptPreview);
+loadCustomizations().then(updatePromptPreview);

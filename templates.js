@@ -92,19 +92,95 @@ const LENGTH_DESCRIPTORS = {
   long: 'Longer — up to 200 words if the content justifies it.',
 };
 
-function buildSystemPrompt({ templateKey, tone, length, customPrompts }) {
-  const tmpl = TEMPLATES[templateKey];
-  const body = (customPrompts && customPrompts[templateKey]) || tmpl.systemPrompt;
-  const toneDesc = TONE_DESCRIPTORS[tone] || '';
-  const lengthDesc = LENGTH_DESCRIPTORS[length] || '';
+const CUSTOM_STORAGE_KEYS = [
+  'customPrompts',
+  'customTemplates',
+  'toneOverrides',
+  'lengthOverrides',
+];
 
-  let system = `${body}\n\nTone: ${toneDesc}\n${lengthDesc}`;
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function getCustomizations(storage) {
+  return {
+    customPrompts: storage?.customPrompts || {},
+    customTemplates: storage?.customTemplates || {},
+    toneOverrides: storage?.toneOverrides || {},
+    lengthOverrides: storage?.lengthOverrides || {},
+  };
+}
+
+function getEffectiveTemplates(custom) {
+  const list = [];
+  for (const [key, t] of Object.entries(TEMPLATES)) {
+    list.push({
+      key,
+      name: t.name,
+      systemPrompt: custom.customPrompts[key] || t.systemPrompt,
+      defaultSystemPrompt: t.systemPrompt,
+      charLimit: t.charLimit,
+      isCustom: false,
+      hasPromptOverride: !!custom.customPrompts[key],
+    });
+  }
+  for (const [key, t] of Object.entries(custom.customTemplates)) {
+    list.push({
+      key,
+      name: t.name,
+      systemPrompt: custom.customPrompts[key] || t.systemPrompt,
+      defaultSystemPrompt: t.systemPrompt,
+      charLimit: t.charLimit ?? null,
+      isCustom: true,
+      hasPromptOverride: !!custom.customPrompts[key],
+    });
+  }
+  return list;
+}
+
+function getEffectiveTones(custom) {
+  return Object.entries(TONE_DESCRIPTORS).map(([key, descriptor]) => ({
+    key,
+    label: capitalize(key),
+    descriptor: custom.toneOverrides[key] || descriptor,
+    defaultDescriptor: descriptor,
+    hasOverride: !!custom.toneOverrides[key],
+  }));
+}
+
+function getEffectiveLengths(custom) {
+  return Object.entries(LENGTH_DESCRIPTORS).map(([key, descriptor]) => ({
+    key,
+    label: capitalize(key),
+    descriptor: custom.lengthOverrides[key] || descriptor,
+    defaultDescriptor: descriptor,
+    hasOverride: !!custom.lengthOverrides[key],
+  }));
+}
+
+function buildSystemPrompt({ templateKey, tone, length, custom }) {
+  const templates = getEffectiveTemplates(custom);
+  const tmpl = templates.find((t) => t.key === templateKey);
+  if (!tmpl) return '';
+
+  const tones = getEffectiveTones(custom);
+  const lengths = getEffectiveLengths(custom);
+  const toneDesc = tones.find((t) => t.key === tone)?.descriptor || '';
+  const lengthDesc = lengths.find((l) => l.key === length)?.descriptor || '';
+
+  let system = `${tmpl.systemPrompt}\n\nTone: ${toneDesc}\n${lengthDesc}`;
   if (tmpl.charLimit) {
     system += `\n\nHARD CHARACTER LIMIT: ${tmpl.charLimit} characters. Do not exceed.`;
   }
   return system;
 }
 
-function isCustomPromptActive(templateKey, customPrompts) {
-  return !!(customPrompts && customPrompts[templateKey] && customPrompts[templateKey].trim());
+function isAnyCustomizationActive({ templateKey, tone, length, custom }) {
+  return (
+    !!custom.customPrompts[templateKey] ||
+    !!custom.toneOverrides[tone] ||
+    !!custom.lengthOverrides[length] ||
+    !!custom.customTemplates[templateKey]
+  );
 }

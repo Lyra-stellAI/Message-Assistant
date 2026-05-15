@@ -83,6 +83,24 @@
       align-items: center;
     }
     .prompt-actions .status { margin: 0; }
+    .delete-btn {
+      color: #991b1b;
+      border-color: #fecaca;
+    }
+    .delete-btn:hover {
+      background: #fef2f2;
+    }
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #d4d4d4;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: inherit;
+      background: white;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+    }
     h1 { font-size: 22px; margin-bottom: 8px; }
     .subtitle { color: #737373; margin-bottom: 24px; font-size: 13px; }
     .section {
@@ -200,10 +218,27 @@
     <span class="status" id="save-status" style="margin-left: 12px; margin-top: 0;"></span>
   </div>
 
-  <h1 style="margin-top: 40px;">Custom prompts</h1>
-  <p class="subtitle">Override the built-in system prompt for each message type. Leave an override empty to use the default. Tone and length descriptors are still appended automatically.</p>
+  <h1 style="margin-top: 40px;">Message types</h1>
+  <p class="subtitle">Override the built-in system prompt for each message type, or create your own. Custom message types appear in the side panel's Message type dropdown.</p>
 
-  <div class="section" id="prompts-section">
+  <div class="section" id="templates-section">
+    <!-- Populated by options.js -->
+  </div>
+  <div style="margin-top: 12px;">
+    <button id="add-template" type="button">Add new message type</button>
+  </div>
+
+  <h1 style="margin-top: 40px;">Tones</h1>
+  <p class="subtitle">Override the descriptor the model sees for each tone. The label in the dropdown stays the same.</p>
+
+  <div class="section" id="tones-section">
+    <!-- Populated by options.js -->
+  </div>
+
+  <h1 style="margin-top: 40px;">Lengths</h1>
+  <p class="subtitle">Override the descriptor the model sees for each length.</p>
+
+  <div class="section" id="lengths-section">
     <!-- Populated by options.js -->
   </div>
 
