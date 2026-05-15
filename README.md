@@ -1,7 +1,8 @@
 # Message Assistant
 
+<p align="center">
 <img width="2816" height="1536" alt="Gemini_Generated_Image_qbdqjlqbdqjlqbdq" src="https://github.com/user-attachments/assets/9b809208-dbcd-4552-aee9-150a831e900c" />
-
+</p>
 
 <p align="center">
   An AI-powered Chrome extension that drafts LinkedIn notes, cold messages, emails, follow-ups, and more — directly in your browser sidebar.
