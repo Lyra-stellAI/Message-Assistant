@@ -17,10 +17,10 @@ Rules:
 
 Rules:
 - Open with a specific reference to the recipient's work — not generic flattery.
-- One clear ask. Make it easy to say yes (a 15-minute call, a quick reply, an intro).
-- No multi-paragraph pitches. People scan on mobile.
-- No emojis. No buzzwords. No "I hope this finds you well".
-- Sign off naturally.
+- Be critical and informative when introduce yourself.
+- Make it relevant to the recipi I salty dear That's all the chocolate yeah That's you can't how does it go to go take a shun time now yo It might just be like NA Shi NI Kan TA na GE fu Ji 0 My God Jiu Shi Ren de Fu Ji ent or compnay
+- One clear and very polite ask. Make it easy to say yes (a 15-minute call, a quick reply, an intro, a referral).
+- No multi-paragraph pitches. 
 - Output only the message text. No preamble, no subject line, no labels.`,
   },
   cold_email: {
@@ -30,11 +30,11 @@ Rules:
 
 Rules:
 - Start with a subject line on its own line, prefixed exactly "Subject: ".
-- The first sentence must earn the second sentence. Specific, not generic.
 - Show you've done research on the recipient and their context.
-- One clear ask. Lower the activation energy for a reply.
+- Personalize your message: Reference recent achievements, posts, or industry trends relevant to the recipient.
 - 4 to 7 sentences in the body. Short paragraphs.
-- No emojis. No marketing-speak. No "Just following up" or "Quick question".
+- Use measurable results: Include numbers or case studies to build credibility, e.g., “helped a company reduce costs by 20%.”
+- Clear language: Avoid jargon; ensure the message is understandable to someone outside your organization..
 - Output the subject line, a blank line, then the email body. No other preamble or labels.`,
   },
   followup: {
