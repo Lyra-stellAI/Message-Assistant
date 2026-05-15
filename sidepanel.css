@@ -213,6 +213,41 @@ input:focus {
   display: none !important;
 }
 
+.profile-row {
+  padding: 8px 10px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #1a1a1a;
+  cursor: pointer;
+  margin: 0;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  cursor: pointer;
+}
+
+.inline-link {
+  margin-left: 4px;
+  font-size: 12px;
+  color: #525252;
+  text-decoration: underline;
+}
+
+.inline-link:hover {
+  color: #1a1a1a;
+}
+
 .prompt-details {
   margin: 8px 0 4px;
   font-size: 12px;

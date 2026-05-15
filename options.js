@@ -41,7 +41,41 @@ async function loadSettings() {
     if (stored[field.storage]) input.value = stored[field.storage];
     setStatus(status, !!stored[field.storage]);
   }
+  await loadProfile();
 }
+
+const profileInput = document.getElementById('userProfile');
+const saveProfileBtn = document.getElementById('save-profile');
+const clearProfileBtn = document.getElementById('clear-profile');
+const profileStatus = document.getElementById('profile-status');
+
+async function loadProfile() {
+  const { userProfile } = await chrome.storage.sync.get('userProfile');
+  profileInput.value = userProfile || '';
+  setStatus(profileStatus, !!(userProfile && userProfile.trim()));
+}
+
+async function saveProfile() {
+  const value = profileInput.value.trim();
+  if (value) {
+    await chrome.storage.sync.set({ userProfile: value });
+  } else {
+    await chrome.storage.sync.remove('userProfile');
+  }
+  setStatus(profileStatus, !!value);
+  flashStatus(profileStatus, value ? 'Saved.' : 'Cleared.');
+}
+
+async function clearProfile() {
+  if (!confirm('Clear your profile? This removes it from storage.')) return;
+  profileInput.value = '';
+  await chrome.storage.sync.remove('userProfile');
+  setStatus(profileStatus, false);
+  flashStatus(profileStatus, 'Cleared.');
+}
+
+saveProfileBtn?.addEventListener('click', saveProfile);
+clearProfileBtn?.addEventListener('click', clearProfile);
 
 function validate(field, value) {
   if (!value) return { ok: true };

@@ -95,6 +95,8 @@ const CUSTOM_STORAGE_KEYS = [
   'customTemplates',
   'toneOverrides',
   'lengthOverrides',
+  'userProfile',
+  'includeUserProfile',
 ];
 
 function capitalize(s) {
@@ -157,7 +159,7 @@ function getEffectiveLengths(custom) {
   }));
 }
 
-function buildSystemPrompt({ templateKey, tone, length, custom }) {
+function buildSystemPrompt({ templateKey, tone, length, custom, userProfile }) {
   const templates = getEffectiveTemplates(custom);
   const tmpl = templates.find((t) => t.key === templateKey);
   if (!tmpl) return '';
@@ -167,18 +169,25 @@ function buildSystemPrompt({ templateKey, tone, length, custom }) {
   const toneDesc = tones.find((t) => t.key === tone)?.descriptor || '';
   const lengthDesc = lengths.find((l) => l.key === length)?.descriptor || '';
 
-  let system = `${tmpl.systemPrompt}\n\nTone: ${toneDesc}\n${lengthDesc}`;
+  let system = tmpl.systemPrompt;
+
+  if (userProfile && userProfile.trim()) {
+    system += `\n\nAbout the sender (the person whose voice you're writing in — use this to ground the message in their real background, projects, and credibility; reference specifics where they make the message more relevant to the recipient):\n${userProfile.trim()}`;
+  }
+
+  system += `\n\nTone: ${toneDesc}\n${lengthDesc}`;
   if (tmpl.charLimit) {
     system += `\n\nHARD CHARACTER LIMIT: ${tmpl.charLimit} characters. Do not exceed.`;
   }
   return system;
 }
 
-function isAnyCustomizationActive({ templateKey, tone, length, custom }) {
+function isAnyCustomizationActive({ templateKey, tone, length, custom, profileIncluded }) {
   return (
     !!custom.customPrompts[templateKey] ||
     !!custom.toneOverrides[tone] ||
     !!custom.lengthOverrides[length] ||
-    !!custom.customTemplates[templateKey]
+    !!custom.customTemplates[templateKey] ||
+    !!profileIncluded
   );
 }

@@ -4,6 +4,8 @@ let customCache = {
   toneOverrides: {},
   lengthOverrides: {},
 };
+let userProfileCache = '';
+let includeUserProfileCache = true;
 
 const DEFAULT_TONE = 'friendly';
 const DEFAULT_LENGTH = 'medium';
@@ -11,7 +13,20 @@ const DEFAULT_LENGTH = 'medium';
 async function loadCustomizations() {
   const storage = await chrome.storage.sync.get(CUSTOM_STORAGE_KEYS);
   customCache = getCustomizations(storage);
+  userProfileCache = storage.userProfile || '';
+  includeUserProfileCache = storage.includeUserProfile !== false;
   rebuildDropdowns();
+  refreshProfileRow();
+}
+
+function refreshProfileRow() {
+  const hasProfile = !!userProfileCache.trim();
+  els.profileRow.classList.toggle('hidden', !hasProfile);
+  els.includeProfile.checked = includeUserProfileCache;
+}
+
+function effectiveUserProfile() {
+  return includeUserProfileCache && userProfileCache.trim() ? userProfileCache : '';
 }
 
 function rebuildDropdowns() {
@@ -102,6 +117,9 @@ const els = {
   promptPreview: document.getElementById('prompt-preview'),
   promptCustomizedBadge: document.getElementById('prompt-customized-badge'),
   editPromptsLink: document.getElementById('edit-prompts-link'),
+  profileRow: document.getElementById('profile-row'),
+  includeProfile: document.getElementById('include-profile'),
+  editProfileLink: document.getElementById('edit-profile-link'),
 };
 
 const PRESET_MODELS = new Set(
@@ -294,6 +312,7 @@ function buildPrompt() {
     tone: els.tone.value,
     length: els.length.value,
     custom: customCache,
+    userProfile: effectiveUserProfile(),
   });
 
   const ctx = els.context.value.trim();
@@ -316,11 +335,13 @@ function updatePromptPreview() {
     els.promptPreview.textContent = '';
     return;
   }
+  const profile = effectiveUserProfile();
   const system = buildSystemPrompt({
     templateKey: tmpl.key,
     tone: els.tone.value,
     length: els.length.value,
     custom: customCache,
+    userProfile: profile,
   });
   els.promptPreview.textContent = system;
   els.promptCustomizedBadge.classList.toggle(
@@ -330,6 +351,7 @@ function updatePromptPreview() {
       tone: els.tone.value,
       length: els.length.value,
       custom: customCache,
+      profileIncluded: !!profile,
     }),
   );
 }
@@ -555,6 +577,15 @@ els.length.addEventListener('change', updatePromptPreview);
 els.editPromptsLink?.addEventListener('click', (e) => {
   e.preventDefault();
   chrome.runtime.openOptionsPage();
+});
+els.editProfileLink?.addEventListener('click', (e) => {
+  e.preventDefault();
+  chrome.runtime.openOptionsPage();
+});
+els.includeProfile?.addEventListener('change', async () => {
+  includeUserProfileCache = els.includeProfile.checked;
+  await chrome.storage.sync.set({ includeUserProfile: includeUserProfileCache });
+  updatePromptPreview();
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {

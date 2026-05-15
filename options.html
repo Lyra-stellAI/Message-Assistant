@@ -218,6 +218,20 @@
     <span class="status" id="save-status" style="margin-left: 12px; margin-top: 0;"></span>
   </div>
 
+  <h1 style="margin-top: 40px;">Your profile</h1>
+  <p class="subtitle">Tell the model who you are. Resume highlights, current role, notable projects, expertise — anything you'd want it to reference when tailoring messages to a recipient. Saved locally and sent to the LLM provider along with each request.</p>
+
+  <div class="section">
+    <label for="userProfile">About you</label>
+    <p class="hint">Free-form. Paste resume bullet points, write a paragraph, or both. The model uses this as the sender's background when drafting.</p>
+    <textarea id="userProfile" rows="12" placeholder="Example:&#10;&#10;Senior ML engineer at Acme (3 years), previously at Beta Corp. MS in Computer Science from XYZ University.&#10;&#10;Notable projects:&#10;- Led migration of legacy ranking system to learned retrieval; cut latency 40%.&#10;- Built end-to-end training pipeline for our recommendation model.&#10;- Open-source contributor to LangChain (Python)."></textarea>
+    <div class="row" style="margin-top: 8px; align-items: center;">
+      <button id="save-profile" type="button">Save profile</button>
+      <button id="clear-profile" type="button" class="secondary">Clear</button>
+      <span class="status" id="profile-status" style="margin: 0;"></span>
+    </div>
+  </div>
+
   <h1 style="margin-top: 40px;">Message types</h1>
   <p class="subtitle">Override the built-in system prompt for each message type, or create your own. Custom message types appear in the side panel's Message type dropdown.</p>
 
