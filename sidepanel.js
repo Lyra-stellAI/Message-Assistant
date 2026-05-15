@@ -59,7 +59,7 @@ function buildAnthropicRequest({ model, apiKey, system, user }) {
     },
     body: JSON.stringify({
       model,
-      max_tokens: 1024,
+      max_tokens: 4096,
       stream: true,
       system,
       messages: [{ role: 'user', content: user }],
@@ -77,7 +77,8 @@ function openAICompatibleBuilder(url, maxTokensKey) {
     body: JSON.stringify({
       model,
       stream: true,
-      [maxTokensKey]: 1024,
+      stream_options: { include_usage: true },
+      [maxTokensKey]: 4096,
       messages: [
         { role: 'system', content: system },
         { role: 'user', content: user },
@@ -123,6 +124,38 @@ function inferProvider(model) {
     if (config.inferPatterns.some((p) => p.test(model))) return key;
   }
   return null;
+}
+
+const REASONING_MODEL_PATTERNS = [
+  /^o\d/i,
+  /^gpt-5/i,
+  /deepseek-reasoner/i,
+  /^qwq/i,
+];
+
+function looksLikeReasoningModel(model) {
+  return REASONING_MODEL_PATTERNS.some((p) => p.test(model || ''));
+}
+
+function emptyOutputMessage(usage, model) {
+  const reasoning =
+    usage?.completion_tokens_details?.reasoning_tokens ||
+    usage?.output_tokens_details?.reasoning_tokens;
+  const completion = usage?.completion_tokens ?? usage?.output_tokens;
+
+  if (reasoning && reasoning > 0) {
+    return `No visible output — the model used ${reasoning} reasoning tokens but the token budget ran out before it could produce an answer. Reasoning models (GPT-5, o-series, deepseek-reasoner, QwQ) need more headroom. Try a non-reasoning model (e.g. gpt-4o, deepseek-chat, qwen-plus), or shorten your prompt.`;
+  }
+
+  if (looksLikeReasoningModel(model)) {
+    return `No visible output. "${model}" looks like a reasoning model — it may have used the entire token budget on internal reasoning. Try a non-reasoning model (gpt-4o, deepseek-chat, qwen-plus) or shorten your prompt.`;
+  }
+
+  if (completion === 0) {
+    return 'The model returned 0 output tokens. Check the model ID and that your API key has access to it.';
+  }
+
+  return 'No output. Try again or check your settings (model ID, API key, custom prompt).';
 }
 
 async function migrateLegacyKey() {
@@ -291,6 +324,7 @@ async function generate() {
     const decoder = new TextDecoder();
     let buffer = '';
     let fullText = '';
+    let lastUsage = null;
 
     while (true) {
       const { done, value } = await reader.read();
@@ -316,6 +350,9 @@ async function generate() {
           throw new Error(data.error?.message || 'Stream error');
         }
 
+        if (data.usage) lastUsage = data.usage;
+        if (data.type === 'message_delta' && data.usage) lastUsage = data.usage;
+
         const text = extractDelta(data);
         if (text) {
           fullText += text;
@@ -326,7 +363,7 @@ async function generate() {
     }
 
     if (!fullText.trim()) {
-      throw new Error('No output. Try again or check your settings.');
+      throw new Error(emptyOutputMessage(lastUsage, model));
     }
 
     els.outputActions.classList.remove('hidden');
