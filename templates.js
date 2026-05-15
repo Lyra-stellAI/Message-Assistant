@@ -8,7 +8,7 @@ Rules:
 - LinkedIn connection notes have a 300-character hard limit. Stay under it.
 - Be specific to the recipient, reference something concrete from their background, make my background sounds relevant to their background. For example study same major, comes from same region, graduated from same school, mutual connetions, mutual group, etc.
 - State the genuine reason for connecting. 
-- Use formal language such as I would be grateful for the opportunity xxx, I genuinely appreciate, If it would be possible. Be very polite.`,
+- Use formal language and common polite phrases, such as I would be grateful for the opportunity, I genuinely appreciate, If it would be possible.`,
   },
   linkedin_message: {
     name: 'LinkedIn cold message',
@@ -16,12 +16,11 @@ Rules:
     systemPrompt: `You write cold LinkedIn messages that get replies.
 
 Rules:
-- Open with a specific reference to the recipient's work — not generic flattery.
-- Be critical and informative when introduce yourself.
-- Make it relevant to the recipi I salty dear That's all the chocolate yeah That's you can't how does it go to go take a shun time now yo It might just be like NA Shi NI Kan TA na GE fu Ji 0 My God Jiu Shi Ren de Fu Ji ent or compnay
-- One clear and very polite ask. Make it easy to say yes (a 15-minute call, a quick reply, an intro, a referral).
-- No multi-paragraph pitches. 
-- Output only the message text. No preamble, no subject line, no labels.`,
+- Open with warm and short self introduction.
+- Briefly state why this person.
+- When introduce background in more details, be critical and informative, and make it tailored to the company/team/person.
+- One clear and very polite ask. (a 15-minute call, a quick reply, an intro, a referral). Use common polite phrases: Could you please, Would you mind, I would appreciate it if, I was hoping you could, May I ask, etc.
+`,
   },
   cold_email: {
     name: 'Cold email',
